@@ -7,21 +7,22 @@
 
 import React, { useCallback, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
+import { Canvas } from "@react-three/fiber";
 import { css } from "@emotion/css";
 import { Camera } from "@mediapipe/camera_utils";
 import { Hands, Results } from "@mediapipe/hands";
+import { useSnapshot } from "valtio";
 
 import { drawCanvas } from "./utils/drawCanvas";
-import { CubeUI } from "./utils/Cube";
-import { Canvas } from "@react-three/fiber";
+import { CubeUI } from "./utils/CubeUI";
+import { state } from "./state";
 
 export function Handtracking() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const resultsRef = useRef<Results>();
 
-    const [handsData, setHandsData] = useState<Results>();
-    const [canvasData, setCanvasData] = useState<CanvasRenderingContext2D>();
+    const { handLandmarks } = useSnapshot(state);
     /**
      * 検出結果（フレーム毎に呼び出される）
      * @param results
@@ -32,8 +33,7 @@ export function Handtracking() {
         const canvasCtx = canvasRef.current!.getContext("2d")!;
         drawCanvas(canvasCtx, results);
 
-        setHandsData(results);
-        setCanvasData(canvasCtx);
+        state.handLandmarks = results.multiHandLandmarks;
     }, []);
 
     // 初期設定
@@ -72,7 +72,6 @@ export function Handtracking() {
     const OutputData = () => {
         const results = resultsRef.current!;
         console.log(results.multiHandLandmarks);
-        console.log(typeof results);
     };
 
     return (
@@ -104,9 +103,19 @@ export function Handtracking() {
                     Output Data
                 </button>
             </div>
-            <Canvas>
-                <CubeUI />
-            </Canvas>
+            <div
+                style={{
+                    position: "absolute",
+                    height: "100%",
+                    width: "100%",
+                    top: "0px",
+                }}
+            >
+                <Canvas>
+                    <ambientLight intensity={0.5} />
+                    <CubeUI />
+                </Canvas>
+            </div>
         </div>
     );
 }
@@ -134,6 +143,7 @@ const styles = {
         position: absolute;
         top: 20px;
         left: 20px;
+        z-index: 2;
     `,
     button: css`
         color: #fff;
