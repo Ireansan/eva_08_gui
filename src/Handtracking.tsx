@@ -15,7 +15,9 @@ import { useSnapshot } from "valtio";
 
 import { drawCanvas } from "./utils/drawCanvas";
 import { CubeUI } from "./utils/CubeUI";
+import { SphereUI } from "./utils/SphereUI";
 import { state } from "./state";
+import { OrbitControls } from "@react-three/drei";
 
 export function Handtracking() {
     const webcamRef = useRef<Webcam>(null);
@@ -109,11 +111,14 @@ export function Handtracking() {
                     height: "100%",
                     width: "100%",
                     top: "0px",
+                    zIndex: "1",
                 }}
             >
                 <Canvas>
                     <ambientLight intensity={0.5} />
-                    <CubeUI />
+                    {/* <CubeUI /> */}
+                    <SphereUI />
+                    <OrbitControls />
                 </Canvas>
             </div>
         </div>
