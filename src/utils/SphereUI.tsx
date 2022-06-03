@@ -1,6 +1,5 @@
 import React, { useRef, MutableRefObject } from "react";
 import { useFrame, useThree, Size } from "@react-three/fiber";
-// import { Quaternion } from "@react-three/fiber";
 import { TransformControls } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { Group, Vector3, Matrix4, Quaternion } from "three";
@@ -31,9 +30,10 @@ function Cone({ ...props }) {
 // Calculate functions
 function convert3D(vector: Vector3, viewport: Size): Vector3 {
     const returnVector = new Vector3();
-    returnVector.x = (-vector.x + 1 / 2) * viewport.width;
-    returnVector.y = (-vector.y + 1 / 2) * viewport.height;
-    returnVector.z = -vector.z * viewport.width;
+    returnVector.x = (vector.x - 1 / 2) * viewport.width;
+    returnVector.y = (vector.y - 1 / 2) * viewport.height;
+    returnVector.z = vector.z * viewport.width;
+    returnVector.multiplyScalar(-1); // mirroring
 
     return returnVector;
 }
@@ -51,6 +51,11 @@ function setPosition(ref: MutableRefObject<Group>, vector: Vector3) {
 export function SphereUI() {
     const { handLandmarks } = useSnapshot(state);
     const viewport = useThree((state) => state.viewport);
+
+    const qPI2 = new Quaternion().setFromAxisAngle(
+        new Vector3(1, 0, 0),
+        Math.PI / 2
+    ); // rotate x,  PI / 2
     const rotationMatrix = new Matrix4();
     const targetQuaternion = new Quaternion();
 
@@ -78,14 +83,16 @@ export function SphereUI() {
                         Math.pow(position1.z - position2.z, 2)
                 ) / 2;
 
+            // Set position, scale
             ref.current!.position.x = (position1.x + position2.x) / 2;
             ref.current!.position.y = (position1.y + position2.y) / 2;
             ref.current!.position.z = 0;
-            // ref.current!.scale.y = r3;
-            ref.current!.scale.z = r3;
+            ref.current!.scale.y = r3;
 
+            // Set rotation
             rotationMatrix.lookAt(position1, position2, ref.current!.up);
             targetQuaternion.setFromRotationMatrix(rotationMatrix);
+            targetQuaternion.multiply(qPI2);
             const speed = 5;
             ref.current.quaternion.rotateTowards(
                 targetQuaternion,
@@ -103,8 +110,8 @@ export function SphereUI() {
         <>
             <group ref={ref}>
                 <TransformControls />
-                <Sphere />
-                {/* <Cone /> */}
+                {/* <Sphere /> */}
+                <Cone />
             </group>
             <group ref={ref_1}>
                 <Sphere />
