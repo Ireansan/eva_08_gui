@@ -8,6 +8,7 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import { Canvas } from "@react-three/fiber";
+import { GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { css } from "@emotion/css";
 import { Camera } from "@mediapipe/camera_utils";
 import { Hands, Results } from "@mediapipe/hands";
@@ -119,6 +120,17 @@ export function Handtracking() {
                     {/* <CubeUI /> */}
                     <SphereUI />
                     <OrbitControls />
+
+                    <GizmoHelper
+                        alignment="bottom-right"
+                        margin={[80, 80]}
+                        // renderPriority={2}
+                    >
+                        <GizmoViewport
+                            axisColors={["hotpink", "aquamarine", "#3498DB"]}
+                            labelColor="black"
+                        />
+                    </GizmoHelper>
                 </Canvas>
             </div>
         </div>
