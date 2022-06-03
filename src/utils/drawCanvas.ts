@@ -8,9 +8,9 @@ import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 import { HAND_CONNECTIONS, NormalizedLandmarkListList, Results } from '@mediapipe/hands';
 
 /**
- * cnavasに描画する
+ * Draw canvas
  * @param ctx canvas context
- * @param results 手の検出結果
+ * @param results Hand detection results
  */
 export const drawCanvas = (ctx: CanvasRenderingContext2D, results: Results) => {
     const width = ctx.canvas.width
@@ -18,26 +18,26 @@ export const drawCanvas = (ctx: CanvasRenderingContext2D, results: Results) => {
 
     ctx.save()
     ctx.clearRect(0, 0, width, height)
-    // canvas の左右反転
+    // Flip horizontal canvas
     ctx.scale(-1, 1)
     ctx.translate(-width, 0)
-    // capture image の描画
+    // Draw capture image
     ctx.drawImage(results.image, 0, 0, width, height)
-    // 手の描画
+    // Draw hand
     if (results.multiHandLandmarks) {
-        // 骨格の描画
+        // Draw frames
         for (const landmarks of results.multiHandLandmarks) {
             drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 1 })
             drawLandmarks(ctx, landmarks, { color: '#FF0000', lineWidth: 1, radius: 2 })
         }
-        // 円の描画
+        // Draw circle
         drawCircle(ctx, results.multiHandLandmarks)
     }
     ctx.restore()
 }
 
 /**
- *  人差し指の先端と人差し指の先端の間に円を描く
+ * Draw a circle between the tip of the index finger and the tip of the forefinger
  * @param ctx
  * @param handLandmarks
  */
