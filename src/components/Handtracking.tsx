@@ -8,24 +8,23 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import { Canvas } from "@react-three/fiber";
-import { GizmoHelper, GizmoViewport } from "@react-three/drei";
+import { OrbitControls, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { css } from "@emotion/css";
 import { Camera } from "@mediapipe/camera_utils";
 import { Hands, Results } from "@mediapipe/hands";
 import { useSnapshot } from "valtio";
 
-import { drawCanvas } from "./utils/drawCanvas";
-import { CubeUI } from "./utils/CubeUI";
-import { SphereUI } from "./utils/SphereUI";
-import { state } from "./state";
-import { OrbitControls } from "@react-three/drei";
+import { drawCanvas } from "../utils/drawCanvas";
+import { CubeUI } from "./CubeUI";
+import { SphereUI } from "./SphereUI";
+import { state } from "../state";
 
 export function Handtracking() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const resultsRef = useRef<Results>();
 
-    const { handLandmarks } = useSnapshot(state);
+    const {} = useSnapshot(state);
     /**
      * 検出結果（フレーム毎に呼び出される）
      * @param results
@@ -117,8 +116,8 @@ export function Handtracking() {
             >
                 <Canvas>
                     <ambientLight intensity={0.5} />
-                    {/* <CubeUI /> */}
-                    <SphereUI />
+                    <CubeUI />
+                    {/* <SphereUI /> */}
                     <OrbitControls />
 
                     <GizmoHelper

@@ -1,51 +1,12 @@
-import React, { useRef, MutableRefObject } from "react";
-import { useFrame, useThree, Size } from "@react-three/fiber";
+import React, { useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import { TransformControls } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { Group, Vector3, Matrix4, Quaternion } from "three";
 
 import { state } from "../state";
-
-// Base Meshs
-function Sphere({ ...props }) {
-    return (
-        <mesh {...props}>
-            <sphereGeometry args={[1, 32, 16]} />
-            {/* <meshStandardMaterial color={"hotpink"} /> */}
-            <meshNormalMaterial attach="material" />
-        </mesh>
-    );
-}
-
-function Cone({ ...props }) {
-    return (
-        <mesh {...props}>
-            <cylinderBufferGeometry args={[0, 0.5, 2, 32, 4]} />
-            {/* <meshStandardMaterial color={"hotpink"} /> */}
-            <meshNormalMaterial attach="material" />
-        </mesh>
-    );
-}
-
-// Calculate functions
-function convert3D(vector: Vector3, viewport: Size): Vector3 {
-    const returnVector = new Vector3();
-    returnVector.x = (vector.x - 1 / 2) * viewport.width;
-    returnVector.y = (vector.y - 1 / 2) * viewport.height;
-    returnVector.z = vector.z * viewport.width;
-    returnVector.multiplyScalar(-1); // mirroring
-
-    return returnVector;
-}
-
-function setPosition(ref: MutableRefObject<Group>, vector: Vector3) {
-    ref.current.position.x = vector.x;
-    ref.current.position.y = vector.y;
-    ref.current.position.z = vector.z;
-    ref.current.scale.x = 0.1;
-    ref.current.scale.y = 0.1;
-    ref.current.scale.z = 0.1;
-}
+import { Sphere, Cone } from "./Mesh";
+import { transformToView } from "../utils/MediapipeHelper";
 
 // Main
 export function SphereUI() {
@@ -62,6 +23,7 @@ export function SphereUI() {
     const ref = useRef<Group>(new Group());
     const ref_1 = useRef<Group>(new Group());
     const ref_2 = useRef<Group>(new Group());
+
     useFrame((state, delta) => {
         if (handLandmarks.length > 0 && handLandmarks[0].length > 8) {
             const landmarks1 = new Vector3(
@@ -74,8 +36,8 @@ export function SphereUI() {
                 handLandmarks[0][4].y,
                 handLandmarks[0][4].z
             );
-            const position1 = convert3D(landmarks1, viewport);
-            const position2 = convert3D(landmarks2, viewport);
+            const position1 = transformToView(landmarks1, viewport);
+            const position2 = transformToView(landmarks2, viewport);
             const r3 =
                 Math.sqrt(
                     Math.pow(position1.x - position2.x, 2) +
@@ -84,9 +46,11 @@ export function SphereUI() {
                 ) / 2;
 
             // Set position, scale
-            ref.current!.position.x = (position1.x + position2.x) / 2;
-            ref.current!.position.y = (position1.y + position2.y) / 2;
-            ref.current!.position.z = 0;
+            ref.current.position.set(
+                (position1.x + position2.x) / 2,
+                (position1.y + position2.y) / 2,
+                0
+            );
             ref.current!.scale.y = r3;
 
             // Set rotation
@@ -101,8 +65,8 @@ export function SphereUI() {
             // ref.current.lookAt(position1); <-- X, not match (p1 - p2)
 
             // CONFIRM:
-            setPosition(ref_1, position1);
-            setPosition(ref_2, position2);
+            ref_1.current.position.copy(position1);
+            ref_2.current.position.copy(position2);
         }
     });
 
@@ -110,14 +74,14 @@ export function SphereUI() {
         <>
             <group ref={ref}>
                 <TransformControls />
-                {/* <Sphere /> */}
-                <Cone />
+                <Sphere />
+                {/* <Cone /> */}
             </group>
             <group ref={ref_1}>
-                <Sphere />
+                <Sphere scale={new Vector3(0.1, 0.1, 0.1)} />
             </group>
             <group ref={ref_2}>
-                <Sphere />
+                <Sphere scale={new Vector3(0.1, 0.1, 0.1)} />
             </group>
         </>
     );
