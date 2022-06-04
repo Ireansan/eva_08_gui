@@ -26,7 +26,7 @@ export function Handtracking() {
 
     const {} = useSnapshot(state);
     /**
-     * 検出結果（フレーム毎に呼び出される）
+     * Detection results (called every frame)
      * @param results
      */
     const onResults = useCallback((results: Results) => {
@@ -70,7 +70,7 @@ export function Handtracking() {
         }
     }, [onResults]);
 
-    /** 検出結果をconsoleに出力する */
+    /** output detection results */
     const OutputData = () => {
         const results = resultsRef.current!;
         console.log(results.multiHandLandmarks);
