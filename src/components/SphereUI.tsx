@@ -6,7 +6,7 @@ import { Group, Vector3, Matrix4, Quaternion } from "three";
 
 import { state } from "../state";
 import { Sphere, Cone } from "./Mesh";
-import { transformToView } from "../utils/MediapipeHelper";
+import { normalizeToWorld } from "../helpers/mediapipe.helper";
 
 // Main
 export function SphereUI() {
@@ -36,8 +36,8 @@ export function SphereUI() {
                 handLandmarks[0][4].y,
                 handLandmarks[0][4].z
             );
-            const position1 = transformToView(landmarks1, viewport);
-            const position2 = transformToView(landmarks2, viewport);
+            const position1 = normalizeToWorld(landmarks1, viewport);
+            const position2 = normalizeToWorld(landmarks2, viewport);
             const r3 =
                 Math.sqrt(
                     Math.pow(position1.x - position2.x, 2) +
