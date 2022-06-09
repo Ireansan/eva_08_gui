@@ -12,7 +12,7 @@ import { HAND_CONNECTIONS, NormalizedLandmarkListList, Results } from '@mediapip
  * @param ctx canvas context
  * @param results Hand detection results
  */
-export const drawCanvas = (ctx: CanvasRenderingContext2D, results: Results) => {
+export const drawCanvas = (ctx: CanvasRenderingContext2D, results: Results, drawHands: boolean) => {
     const width = ctx.canvas.width
     const height = ctx.canvas.height
 

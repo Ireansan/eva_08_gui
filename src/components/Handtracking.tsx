@@ -13,6 +13,7 @@ import { css } from "@emotion/css";
 import { Camera } from "@mediapipe/camera_utils";
 import { Hands, Results } from "@mediapipe/hands";
 import { useSnapshot } from "valtio";
+import { useControls } from "leva";
 
 import { drawCanvas } from "../utils/drawCanvas";
 import { CubeUI } from "./CubeUI";
@@ -23,8 +24,30 @@ export function Handtracking() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const resultsRef = useRef<Results>();
+    const { mode, drawHands } = useSnapshot(state);
 
-    const {} = useSnapshot(state);
+    const [config, set] = useControls(() => ({
+        mode: {
+            options: ["Soft Sphere", "Follow Box", "EVA_08"],
+            onChange: (e) => {
+                if (e === "Soft Sphere") {
+                    state.mode = 0;
+                } else if (e === "Follow Box") {
+                    state.mode = 1;
+                } else if (e === "EVA_08") {
+                    state.mode = 2;
+                }
+            },
+        },
+        toggle_0: {
+            value: false,
+            label: "Draw Hands",
+            onChange: (e) => {
+                state.drawHands = e;
+            },
+        },
+    }));
+
     /**
      * Detection results (called every frame)
      * @param results
@@ -33,12 +56,12 @@ export function Handtracking() {
         resultsRef.current = results;
 
         const canvasCtx = canvasRef.current!.getContext("2d")!;
-        drawCanvas(canvasCtx, results);
+        drawCanvas(canvasCtx, results, drawHands);
 
         state.handLandmarks = results.multiHandLandmarks;
     }, []);
 
-    // 初期設定
+    // Init
     useEffect(() => {
         const hands = new Hands({
             locateFile: (file) => {
@@ -116,8 +139,8 @@ export function Handtracking() {
             >
                 <Canvas>
                     <ambientLight intensity={0.5} />
-                    <CubeUI />
-                    {/* <SphereUI /> */}
+                    {mode === 0 && <SphereUI />}
+                    {mode === 1 && <CubeUI />}
                     <OrbitControls />
 
                     <GizmoHelper
