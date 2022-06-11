@@ -15,9 +15,11 @@ import { Hands, Results } from "@mediapipe/hands";
 import { useSnapshot } from "valtio";
 import { useControls } from "leva";
 
-import { drawCanvas } from "../utils/drawCanvas";
+import { DrawCanvas } from "./DrawCanvas";
 import { CubeUI } from "./CubeUI";
 import { SphereUI } from "./SphereUI";
+import { EVA08UI } from "./EVA08UI";
+import { Box } from "./Mesh";
 import { state } from "../state";
 
 export function Handtracking() {
@@ -54,10 +56,8 @@ export function Handtracking() {
      * @param results
      */
     const onResults = useCallback((results: Results) => {
-        resultsRef.current = results;
-
-        const canvasCtx = canvasRef.current!.getContext("2d")!;
-        drawCanvas(canvasCtx, results, drawHands);
+        // const canvasCtx = canvasRef.current!.getContext("2d")!;
+        // drawCanvas(canvasCtx, results, drawHands);
 
         state.handResults = results;
     }, []);
@@ -93,13 +93,9 @@ export function Handtracking() {
             });
             camera.start();
         }
-    }, [onResults]);
 
-    /** output detection results */
-    const OutputData = () => {
-        const results = resultsRef.current!;
-        console.log(results.multiHandLandmarks);
-    };
+        console.log("useEffect");
+    }, [onResults]);
 
     return (
         <div className={styles.container}>
@@ -118,18 +114,8 @@ export function Handtracking() {
                 }}
             />
             {/* draw */}
-            <canvas
-                ref={canvasRef}
-                className={styles.canvas}
-                width={1280}
-                height={720}
-            />
-            {/* output */}
-            <div className={styles.buttonContainer}>
-                <button className={styles.button} onClick={OutputData}>
-                    Output Data
-                </button>
-            </div>
+            <DrawCanvas />
+            {/* 3D draw */}
             <div
                 style={{
                     position: "absolute",
@@ -143,6 +129,11 @@ export function Handtracking() {
                     <ambientLight intensity={0.5} />
                     {mode === 0 && <SphereUI />}
                     {mode === 1 && <CubeUI />}
+                    {mode === 2 && (
+                        <EVA08UI>
+                            <Box />
+                        </EVA08UI>
+                    )}
                     <OrbitControls />
 
                     <GizmoHelper
@@ -179,20 +170,5 @@ const styles = {
         width: 1280px;
         height: 720px;
         background-color: #fff;
-    `,
-    buttonContainer: css`
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 2;
-    `,
-    button: css`
-        color: #fff;
-        background-color: #0082cf;
-        font-size: 1rem;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 10px;
-        cursor: pointer;
     `,
 };
