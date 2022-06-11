@@ -27,8 +27,9 @@ export function Handtracking() {
     const { mode, drawHands } = useSnapshot(state);
 
     const [config, set] = useControls(() => ({
-        mode: {
+        type_0: {
             options: ["Soft Sphere", "Follow Box", "EVA_08"],
+            label: "Mode Select",
             onChange: (e) => {
                 if (e === "Soft Sphere") {
                     state.mode = 0;
@@ -40,7 +41,7 @@ export function Handtracking() {
             },
         },
         toggle_0: {
-            value: false,
+            value: true,
             label: "Draw Hands",
             onChange: (e) => {
                 state.drawHands = e;
@@ -58,7 +59,7 @@ export function Handtracking() {
         const canvasCtx = canvasRef.current!.getContext("2d")!;
         drawCanvas(canvasCtx, results, drawHands);
 
-        state.handLandmarks = results.multiHandLandmarks;
+        state.handResults = results;
     }, []);
 
     // Init
@@ -70,6 +71,7 @@ export function Handtracking() {
         });
 
         hands.setOptions({
+            selfieMode: true,
             maxNumHands: 2,
             modelComplexity: 1,
             minDetectionConfidence: 0.5,

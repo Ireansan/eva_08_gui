@@ -18,9 +18,6 @@ export const drawCanvas = (ctx: CanvasRenderingContext2D, results: Results, draw
 
     ctx.save()
     ctx.clearRect(0, 0, width, height)
-    // Flip horizontal canvas
-    ctx.scale(-1, 1)
-    ctx.translate(-width, 0)
     // Draw capture image
     ctx.drawImage(results.image, 0, 0, width, height)
     // Draw hand

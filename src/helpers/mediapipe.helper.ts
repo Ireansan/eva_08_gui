@@ -9,7 +9,6 @@ export class MediapipeHelper {
     handLandmarks: HANDS.NormalizedLandmarkListList;
     handWorldLandmarks: HANDS.NormalizedLandmarkListList;
 
-    mirroring: boolean = true;
     label: string = "Right";
     index: number = 0;
 
@@ -89,13 +88,9 @@ export class MediapipeHelper {
     toThree(i: number, j: number): Vector3 {
         const vector = new Vector3(
             (this.handLandmarks[i][j].x - 1 / 2) * this.viewport.width,
-            (this.handLandmarks[i][j].y - 1 / 2) * this.viewport.height,
-            this.handLandmarks[i][j].z * this.viewport.width
+            (this.handLandmarks[i][j].y - 1 / 2) * -this.viewport.height,
+            -this.handLandmarks[i][j].z * this.viewport.width
         );
-
-        if (this.mirroring) {
-            vector.multiplyScalar(-1);
-        }
 
         return vector;
     }
