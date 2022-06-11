@@ -21,7 +21,7 @@ export const drawCanvas = (ctx: CanvasRenderingContext2D, results: Results, draw
     // Draw capture image
     ctx.drawImage(results.image, 0, 0, width, height)
     // Draw hand
-    if (results.multiHandLandmarks) {
+    if (results.multiHandLandmarks && drawHands) {
         // Draw frames
         for (const landmarks of results.multiHandLandmarks) {
             drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 1 })
