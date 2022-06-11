@@ -6,12 +6,14 @@ import { Group, Vector3, Matrix4, Quaternion } from "three";
 
 import { state } from "../state";
 import { Sphere, Cone } from "./Mesh";
-import { normalizeToWorld } from "../helpers/mediapipe.helper";
+import { MediapipeHelper } from "../helpers/mediapipe.helper";
 
 // Main
 export function SphereUI() {
-    const { handLandmarks } = useSnapshot(state);
+    const { handResults } = useSnapshot(state);
     const viewport = useThree((state) => state.viewport);
+
+    const results = new MediapipeHelper(handResults, viewport);
 
     const qPI2 = new Quaternion().setFromAxisAngle(
         new Vector3(1, 0, 0),
@@ -25,25 +27,12 @@ export function SphereUI() {
     const ref_2 = useRef<Group>(new Group());
 
     useFrame((state, delta) => {
-        if (handLandmarks.length > 0 && handLandmarks[0].length > 8) {
-            const landmarks1 = new Vector3(
-                handLandmarks[0][8].x,
-                handLandmarks[0][8].y,
-                handLandmarks[0][8].z
-            );
-            const landmarks2 = new Vector3(
-                handLandmarks[0][4].x,
-                handLandmarks[0][4].y,
-                handLandmarks[0][4].z
-            );
-            const position1 = normalizeToWorld(landmarks1, viewport);
-            const position2 = normalizeToWorld(landmarks2, viewport);
-            const r3 =
-                Math.sqrt(
-                    Math.pow(position1.x - position2.x, 2) +
-                        Math.pow(position1.y - position2.y, 2) +
-                        Math.pow(position1.z - position2.z, 2)
-                ) / 2;
+        if (results.checkLength()) {
+            const i = results.searchIndex();
+
+            const position1: Vector3 = results.toThree(i!, 8);
+            const position2: Vector3 = results.toThree(i!, 4);
+            const r3 = position1.distanceTo(position2);
 
             // Set position, scale
             ref.current.position.set(
