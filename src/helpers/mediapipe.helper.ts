@@ -30,7 +30,14 @@ export class MediapipeHelper {
      * search index by label
      * @param label
      */
-    searchIndex(label: string = this.label): number | undefined {
+    searchIndex(label: string | undefined): number | undefined{
+        if (label === undefined) {
+            return 0;
+        }
+        else {
+            this.label = label;
+        }
+
         if (this.handLandmarks !== undefined) {
             for (
                 let index: number = 0;
@@ -48,10 +55,12 @@ export class MediapipeHelper {
     /**
      * check length of Landmarks
      */
-    checkLength(): boolean {
+    checkLength(label?: string | undefined): boolean {
+        const index: number = this.searchIndex(label)!;
+
         if (
             this.handLandmarks.length > 0 &&
-            this.handLandmarks[this.index].length > 8
+            this.handLandmarks[index].length > 8
         ) {
             return true;
         }
@@ -95,9 +104,22 @@ export class MediapipeHelper {
         return vector;
     }
 
+    /**
+     * vector a to b
+     * @param a
+     * @param b
+     */
+    toDirection(a: number[], b: number[]): Vector3 {
+        const pa: Vector3 = this.toVector3(a[0], a[1]);
+        const pb: Vector3 = this.toVector3(b[0], b[1]);
+
+        return pb.sub(pa);
+    }
+
     // --------------------------------------------------
     /**
      * calculate angle between planes
+     * @param labels
      * @param array
      */
     /*
@@ -116,36 +138,28 @@ export class MediapipeHelper {
             indexes.length === 6 &&
             labels.every(checkUndefined)
         ) {
-            const p0: Vector3 = this.toVector3(
-                this.searchIndex(labels[0])!,
-                indexes[0]
+            // p1 -> p0
+            const v10: Vector3 = this.toDirection(
+                [this.searchIndex(labels[1])!, indexes[1]],
+                [this.searchIndex(labels[0])!, indexes[0]]
             );
-            const p1: Vector3 = this.toVector3(
-                this.searchIndex(labels[1])!,
-                indexes[1]
+            // p1 -> p2
+            const v12: Vector3 = this.toDirection(
+                [this.searchIndex(labels[1])!, indexes[1]],
+                [this.searchIndex(labels[2])!, indexes[2]]
             );
-            const p2: Vector3 = this.toVector3(
-                this.searchIndex(labels[2])!,
-                indexes[2]
-            );
-            const v10: Vector3 = p0.sub(p1); // p1 -> p0
-            const v12: Vector3 = p2.sub(p1); // p1 -> p2
             const n0: Vector3 = new Vector3().crossVectors(v10, v12); // v10 x v12
 
-            const p3: Vector3 = this.toVector3(
-                this.searchIndex(labels[3])!,
-                indexes[3]
+            // p4 -> p3
+            const v43: Vector3 = this.toDirection(
+                [this.searchIndex(labels[4])!, indexes[4]],
+                [this.searchIndex(labels[3])!, indexes[3]]
             );
-            const p4: Vector3 = this.toVector3(
-                this.searchIndex(labels[4])!,
-                indexes[4]
+            // p4 -> p5
+            const v45: Vector3 = this.toDirection(
+                [this.searchIndex(labels[4])!, indexes[4]],
+                [this.searchIndex(labels[5])!, indexes[5]]
             );
-            const p5: Vector3 = this.toVector3(
-                this.searchIndex(labels[5])!,
-                indexes[5]
-            );
-            const v43: Vector3 = p3.sub(p4); // p4 -> p3
-            const v45: Vector3 = p5.sub(p4); // p4 -> p5
             const n1: Vector3 = new Vector3().crossVectors(v43, v45); // v43 x v45
 
             return n0.angleTo(n1);
@@ -177,6 +191,37 @@ export class MediapipeHelper {
             ];
 
             return this.anglePlanes(labels, indexes);
+        }
+    }
+
+    /**
+     * calculate angle
+     * @param labels
+     * @param indexes
+     */
+    /*
+     * p0 -> p1
+     * p2 -> p3
+     */
+    angleVector(labels: string[], indexes: number[]): number | undefined {
+        const checkUndefined = (i: string) => this.searchIndex(i) !== undefined;
+
+        if (
+            labels.length === 4 &&
+            indexes.length === 4 &&
+            labels.every(checkUndefined)
+        ) {
+            const v01: Vector3 = this.toDirection(
+                [this.searchIndex(labels[0])!, indexes[0]],
+                [this.searchIndex(labels[1])!, indexes[1]]
+            );
+
+            const v23: Vector3 = this.toDirection(
+                [this.searchIndex(labels[2])!, indexes[2]],
+                [this.searchIndex(labels[3])!, indexes[3]]
+            );
+
+            return v01.angleTo(v23);
         }
     }
 }

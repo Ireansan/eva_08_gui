@@ -15,38 +15,43 @@ import { Hands, Results } from "@mediapipe/hands";
 import { useSnapshot } from "valtio";
 import { useControls } from "leva";
 
-import { DrawCanvas } from "./DrawCanvas";
+import { drawCanvas } from "../utils/drawCanvas";
 import { CubeUI } from "./CubeUI";
 import { SphereUI } from "./SphereUI";
 import { EVA08UI } from "./EVA08UI";
-import { Box } from "./Mesh";
-import { state } from "../state";
+import { Box, LabelBox } from "./Mesh";
+import { states } from "../state";
 
 export function Handtracking() {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const resultsRef = useRef<Results>();
-    const { mode, drawHands } = useSnapshot(state);
+    const { config } = useSnapshot(states);
 
-    const [config, set] = useControls(() => ({
+    const [configPanle, set] = useControls(() => ({
         type_0: {
-            options: ["Soft Sphere", "Follow Box", "EVA_08"],
+            options: ["EVA_08", "Soft Sphere", "Follow Box"],
             label: "Mode Select",
             onChange: (e) => {
-                if (e === "Soft Sphere") {
-                    state.mode = 0;
+                if (e === "EVA_08") {
+                    states.config.mode = 0;
+                } else if (e === "Soft Sphere") {
+                    states.config.mode = 1;
                 } else if (e === "Follow Box") {
-                    state.mode = 1;
-                } else if (e === "EVA_08") {
-                    state.mode = 2;
+                    states.config.mode = 2;
                 }
             },
         },
-        toggle_0: {
-            value: true,
-            label: "Draw Hands",
+        type_1: {
+            options: ["Right", "Left", "Undefined"],
+            label: "L/R Select",
             onChange: (e) => {
-                state.drawHands = e;
+                if (e === "Right") {
+                    states.config.label = e;
+                } else if (e === "Left") {
+                    states.config.label = e;
+                } else if (e === "Undefined") {
+                    states.config.label = undefined;
+                }
             },
         },
     }));
@@ -56,10 +61,10 @@ export function Handtracking() {
      * @param results
      */
     const onResults = useCallback((results: Results) => {
-        // const canvasCtx = canvasRef.current!.getContext("2d")!;
-        // drawCanvas(canvasCtx, results, drawHands);
+        const canvasCtx = canvasRef.current!.getContext("2d")!;
+        drawCanvas(canvasCtx, results);
 
-        state.handResults = results;
+        states.handResults = results;
     }, []);
 
     // Init
@@ -114,7 +119,12 @@ export function Handtracking() {
                 }}
             />
             {/* draw */}
-            <DrawCanvas />
+            <canvas
+                ref={canvasRef}
+                className={styles.canvas}
+                width={1280}
+                height={720}
+            />
             {/* 3D draw */}
             <div
                 style={{
@@ -127,13 +137,13 @@ export function Handtracking() {
             >
                 <Canvas>
                     <ambientLight intensity={0.5} />
-                    {mode === 0 && <SphereUI />}
-                    {mode === 1 && <CubeUI />}
-                    {mode === 2 && (
+                    {config.mode === 0 && (
                         <EVA08UI>
-                            <Box />
+                            <LabelBox />
                         </EVA08UI>
                     )}
+                    {config.mode === 1 && <SphereUI />}
+                    {config.mode === 2 && <CubeUI />}
                     <OrbitControls />
 
                     <GizmoHelper
