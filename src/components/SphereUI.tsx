@@ -4,13 +4,13 @@ import { TransformControls } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { Group, Vector3, Matrix4, Quaternion } from "three";
 
-import { state } from "../state";
+import { states } from "../state";
 import { Sphere, Cone } from "./Mesh";
 import { MediapipeHelper } from "../helpers/mediapipe.helper";
 
 // Main
 export function SphereUI() {
-    const { handResults } = useSnapshot(state);
+    const { handResults, config } = useSnapshot(states);
     const viewport = useThree((state) => state.viewport);
 
     const results = new MediapipeHelper(handResults, viewport);
@@ -28,7 +28,7 @@ export function SphereUI() {
 
     useFrame((state, delta) => {
         if (results.checkLength()) {
-            const i = results.searchIndex();
+            const i = results.searchIndex(config.label);
 
             const position1: Vector3 = results.toThree(i!, 8);
             const position2: Vector3 = results.toThree(i!, 4);

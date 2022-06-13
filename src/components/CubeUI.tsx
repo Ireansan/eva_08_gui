@@ -4,12 +4,12 @@ import { TransformControls } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { Group, Vector3 } from "three";
 
-import { state } from "../state";
+import { states } from "../state";
 import { Box } from "./Mesh";
 import { MediapipeHelper } from "../helpers/mediapipe.helper";
 
 export function CubeUI() {
-    const { handResults } = useSnapshot(state);
+    const { handResults, config } = useSnapshot(states);
     const viewport = useThree((state) => state.viewport);
     const results = new MediapipeHelper(handResults, viewport);
 
@@ -17,7 +17,7 @@ export function CubeUI() {
 
     useFrame((state, delta) => {
         if (results.checkLength()) {
-            const i = results.searchIndex();
+            const i = results.searchIndex(config.label);
 
             const position = new Vector3().copy(results.toThree(i!, 8));
             position.z = 0;
