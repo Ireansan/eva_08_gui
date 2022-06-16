@@ -42,12 +42,10 @@ export function Handtracking() {
             },
         },
         type_1: {
-            options: ["Right", "Left", "Undefined"],
+            options: ["Left", "Right", "Undefined"],
             label: "L/R Select",
             onChange: (e) => {
-                if (e === "Right") {
-                    states.config.label = e;
-                } else if (e === "Left") {
+                if (e === "Left" || e === "Right") {
                     states.config.label = e;
                 } else if (e === "Undefined") {
                     states.config.label = undefined;
