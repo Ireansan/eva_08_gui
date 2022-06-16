@@ -9,12 +9,16 @@ class Configs {
 }
 
 class EVA08States {
-    startEuler: THREE.Euler = new THREE.Euler(0, 0, 0)
-    endEuler: THREE.Euler = new THREE.Euler(0, Math.PI / 2, 0)
-    count: number = 0
-    countFlag: boolean = true
+    count: number = 0;
+    thresholdIndex: number = 6;
+    thresholdMiddle: number = 6;
+    thresholdFinger: number = 6;
     // 
-    rotation: THREE.Euler = new THREE.Euler(0, 0, 0)
+    timer: number = 1;
+    elapsedTime: number = 0;
+    // 
+    targetVector: THREE.Vector3 = new THREE.Vector3(0, 0, 1)
+    // 
     rotateFlag: boolean = false
     // 
     upIndex: boolean = false

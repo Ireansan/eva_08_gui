@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Group, Vector3, Euler, Quaternion } from "three";
+import * as THREE from "three";
 import { useSnapshot } from "valtio";
-import { useControls } from "leva";
+import { useControls, folder } from "leva";
 
 import { states } from "../state";
 import { MediapipeHelper } from "../helpers/mediapipe.helper";
@@ -12,43 +12,89 @@ type EVA08UIProps = {
 };
 
 function ActionIndex({ children }: EVA08UIProps) {
-    const ref = useRef<Group>(new Group());
+    const ref = useRef<THREE.Group>(new THREE.Group());
     const { handResults, eva08state, config } = useSnapshot(states);
     const viewport = useThree((state) => state.viewport);
     const results = new MediapipeHelper(handResults, viewport);
+    const rotationMatrix = new THREE.Matrix4();
+    const targetQuaternion = new THREE.Quaternion();
 
-    const [viewStates, set] = useControls(() => ({
-        v0: { value: 0, label: "Finger radian" },
-        v1: { value: 0, label: "n x 5to8" },
-        v2: { value: 0, label: "n x 9to12" },
-        v4: { value: 0, label: "rotation" },
-        v5: { value: false, label: "Index Up" },
-        v6: { value: false, label: "flagIndex" },
-        v7: { value: false, label: "Middle Up" },
-        v8: { value: false, label: "flagMiddle" },
-        v9: { value: false, label: "rotateFlag" },
-        v10: { value: "", label: "Pre Action" },
-        v11: { value: "", label: "Latest Action" },
+    const [configControl, set] = useControls(() => ({
+        setting: folder({
+            s0: {
+                value: 30,
+                min: 5,
+                max: 90,
+                step: 5,
+                lable: "Index Threshold",
+                onChange: (e) => {
+                    states.eva08state.thresholdIndex =
+                        THREE.MathUtils.degToRad(e);
+                },
+            },
+            s1: {
+                value: 30,
+                min: 5,
+                max: 90,
+                step: 5,
+                lable: "Middle Threshold",
+                onChange: (e) => {
+                    states.eva08state.thresholdMiddle =
+                        THREE.MathUtils.degToRad(e);
+                },
+            },
+            s2: {
+                value: 30,
+                min: 5,
+                max: 90,
+                step: 5,
+                lable: "Index Middle",
+                onChange: (e) => {
+                    states.eva08state.thresholdFinger =
+                        THREE.MathUtils.degToRad(e);
+                },
+            },
+            s3: {
+                value: 1,
+                label: "Time [s]",
+                onChange: (e) => {
+                    states.eva08state.timer = e;
+                },
+            },
+            s4: {
+                value: 0,
+                label: "Time left [s]",
+            },
+        }),
+        view: folder({
+            v0: { value: 0, label: "Finger radian" },
+            v1: { value: 0, label: "n x 5to8" },
+            v2: { value: 0, label: "n x 9to12" },
+            v4: { value: 0, label: "rotation" },
+            v5: { value: false, label: "Index Up" },
+            v6: { value: false, label: "flagIndex" },
+            v7: { value: false, label: "Middle Up" },
+            v8: { value: false, label: "flagMiddle" },
+            v9: { value: false, label: "rotateFlag" },
+            v10: { value: "", label: "Pre Action" },
+            v11: { value: "", label: "Latest Action" },
+        }),
     }));
-
-    useEffect(() => {
-        states.eva08state.rotation = new Euler().copy(ref.current.rotation);
-    }, []);
 
     useFrame((state, delta) => {
         if (results.checkLength()) {
             const i = results.searchIndex(config.label);
 
             if (i !== undefined) {
-                const vIndex: Vector3 = results.toDirection(i, 5, i, 6); // 5 -> 8
-                const vMiddle: Vector3 = results.toDirection(i, 9, i, 10); // 9 -> 12
+                const vIndex: THREE.Vector3 = results.toDirection(i, 5, i, 6); // 5 -> 8
+                const vMiddle: THREE.Vector3 = results.toDirection(i, 9, i, 10); // 9 -> 12
                 const angleFinger: number = vIndex.angleTo(vMiddle);
                 set({ v0: angleFinger });
 
                 // normal vector
-                const v5to0: Vector3 = results.toDirection(i, 5, i, 0);
-                const v5to9: Vector3 = results.toDirection(i, 5, i, 9);
-                const n: Vector3 = new Vector3()
+                const v5to0: THREE.Vector3 = results.toDirection(i, 5, i, 0);
+                const v5to9: THREE.Vector3 = results.toDirection(i, 5, i, 9);
+                const n: THREE.Vector3 = new THREE.Vector3()
                     .crossVectors(v5to0, v5to9)
                     .multiplyScalar(-1);
                 const angleIndex: number = vIndex.angleTo(n);
@@ -71,26 +117,24 @@ function ActionIndex({ children }: EVA08UIProps) {
                 // check Index finger / Up
                 if (
                     !eva08state.rotateFlag &&
-                    angleIndex < Math.PI / 3 &&
-                    angleFinger > Math.PI / 4
+                    Math.PI / 2 - angleIndex > eva08state.thresholdIndex &&
+                    angleFinger > eva08state.thresholdFinger
                 ) {
                     // Rotate / Middle
                     if (eva08state.flagMiddle && !eva08state.rotateFlag) {
-                        states.eva08state.rotation.y +=
-                            (Math.PI / 2) * (config.label === "Left" ? 1 : -1);
-                        // convert -PI / 2 ~ PI / 2
-                        states.eva08state.rotation.setFromQuaternion(
-                            new Quaternion().setFromEuler(
-                                states.eva08state.rotation
+                        states.eva08state.targetVector = new THREE.Vector3()
+                            .crossVectors(
+                                states.eva08state.targetVector.clone(),
+                                new THREE.Vector3(0, -1, 0)
                             )
-                        );
+                            .multiplyScalar(config.label === "Left" ? 1 : -1);
                         states.eva08state.flagMiddle = false;
                         states.eva08state.rotateFlag = true;
 
                         console.log("Rotate: Middle -> Index"); //
                         set({ v8: false }); // set({ v8: eva08state.flagMiddle }); //
                         set({ v9: true }); // set({ v9: eva08state.rotateFlag }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Rotate: Middle -> Index" }); //
                     }
                     // call event / Index
@@ -100,56 +144,55 @@ function ActionIndex({ children }: EVA08UIProps) {
 
                         console.log("Call Event: Index -> Index"); //
                         set({ v6: false }); // set({ v6: eva08state.flagIndex }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Call Event: Index -> Index" }); //
                     } else {
                         states.eva08state.upIndex = true;
 
                         console.log("Up: Index"); //
                         set({ v5: true }); // set({ v5: eva08state.upIndex }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Up: Index" }); //
                     }
                 }
                 // check Index finger / Down
                 if (
                     eva08state.upIndex &&
-                    angleIndex > Math.PI / 6 &&
-                    angleFinger < Math.PI / 4
+                    Math.PI / 2 - angleIndex < eva08state.thresholdIndex &&
+                    angleFinger < eva08state.thresholdFinger
                 ) {
                     states.eva08state.upIndex = false;
                     states.eva08state.flagIndex = true;
+                    states.eva08state.elapsedTime =
+                        state.clock.getElapsedTime();
 
                     console.log("Down: Index"); //
                     set({ v5: false }); // set({ v5: eva08state.upIndex }); //
                     set({ v6: true }); // set({ v6: eva08state.flagIndex }); //
-                    set({ v10: viewStates.v11 }); //
+                    set({ v10: configControl.v11 }); //
                     set({ v11: "Down Index" }); //
                 }
                 // check Miggle finger / Up
                 if (
                     !eva08state.rotateFlag &&
-                    angleMiddle < Math.PI / 3 &&
-                    angleFinger > Math.PI / 4
+                    Math.PI / 2 - angleMiddle > eva08state.thresholdMiddle &&
+                    angleFinger > eva08state.thresholdFinger
                 ) {
                     // Rotate / Index
                     if (eva08state.flagIndex && !eva08state.rotateFlag) {
-                        states.eva08state.rotation.y +=
-                            (Math.PI / 2) * (config.label === "Left" ? -1 : 1);
-                        // convert -PI / 2 ~ PI / 2
-                        states.eva08state.rotation.setFromQuaternion(
-                            new Quaternion().setFromEuler(
-                                states.eva08state.rotation
+                        states.eva08state.targetVector = new THREE.Vector3()
+                            .crossVectors(
+                                states.eva08state.targetVector.clone(),
+                                new THREE.Vector3(0, -1, 0)
                             )
-                        );
-
+                            .multiplyScalar(config.label === "Left" ? -1 : 1);
                         states.eva08state.flagIndex = false;
                         states.eva08state.rotateFlag = true;
 
                         console.log("Rotate: Index -> Middle"); //
                         set({ v6: false }); // set({ v6: eva08state.flagIndex }); //
                         set({ v9: true }); // set({ v9: eva08state.rotateFlag }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Rotate: Index -> Middle" }); //
                     }
                     // call event
@@ -159,54 +202,91 @@ function ActionIndex({ children }: EVA08UIProps) {
 
                         console.log("Call Event: Middle -> Middle"); //
                         set({ v8: false }); // set({ v8: eva08state.flagMiddle }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Call Event: Middle -> Middle" }); //
                     } else {
                         states.eva08state.upMiddle = true;
 
                         console.log("Up: Middle"); //
                         set({ v7: true }); // set({ v7: eva08state.upMiddle }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Up: Middle" }); //
                     }
                 }
                 // check Miggle finger Down
                 if (
                     eva08state.upMiddle &&
-                    angleMiddle > Math.PI / 6 &&
-                    angleFinger < Math.PI / 4
+                    Math.PI / 2 - angleMiddle < eva08state.thresholdMiddle &&
+                    angleFinger < eva08state.thresholdFinger
                 ) {
                     states.eva08state.upMiddle = false;
                     states.eva08state.flagMiddle = true;
+                    states.eva08state.elapsedTime =
+                        state.clock.getElapsedTime();
 
                     console.log("Down: Middle"); //
                     set({ v7: false }); // set({ v7: eva08state.upMiddle }); //
                     set({ v8: true }); // set({ v8: eva08state.flagMiddle }); //
-                    set({ v10: viewStates.v11 }); //
+                    set({ v10: configControl.v11 }); //
                     set({ v11: "Down: Middle" }); //
                 }
-                // rotate
+                // Rotate
                 if (eva08state.rotateFlag) {
+                    rotationMatrix.lookAt(
+                        ref.current.position,
+                        new THREE.Vector3()
+                            .copy(eva08state.targetVector)
+                            .add(ref.current.position),
+                        ref.current!.up
+                    );
+                    targetQuaternion.setFromRotationMatrix(rotationMatrix);
                     ref.current.quaternion.rotateTowards(
-                        new Quaternion().setFromEuler(
-                            eva08state.rotation.clone()
-                        ),
+                        targetQuaternion,
                         config.speed * delta
                     );
 
                     console.log("Rotate: Start"); //
                     set({ v4: ref.current.rotation.y }); //
-                    set({ v10: viewStates.v11 }); //
+                    set({ v10: configControl.v11 }); //
                     set({ v11: "Rotate: Start" }); //
 
-                    if (ref.current.rotation.y === eva08state.rotation.y) {
+                    if (
+                        ref.current.rotation.y ===
+                        new THREE.Euler().setFromQuaternion(targetQuaternion).y
+                    ) {
                         states.eva08state.rotateFlag = false;
 
                         console.log("Rotate: Finish"); //
                         set({ v9: false }); // set({ v9: eva08state.rotateFlag }); //
-                        set({ v10: viewStates.v11 }); //
+                        set({ v10: configControl.v11 }); //
                         set({ v11: "Rotate: Finish" }); //
                     }
+                }
+                // Timeout
+                if (
+                    eva08state.flagIndex === true ||
+                    eva08state.flagMiddle === true
+                ) {
+                    if (
+                        state.clock.getElapsedTime() - eva08state.elapsedTime >
+                        eva08state.timer
+                    ) {
+                        states.eva08state.flagIndex = false;
+                        states.eva08state.flagMiddle = false;
+
+                        set({ v6: false }); // set({ v6: eva08state.flagIndex }); //
+                        set({ v8: false }); // set({ v8: eva08state.flagMiddle }); //
+                    }
+                    set({
+                        s4:
+                            eva08state.timer -
+                            (state.clock.getElapsedTime() -
+                                eva08state.elapsedTime),
+                    }); //
+                } else {
+                    set({
+                        s4: eva08state.timer,
+                    }); //
                 }
             }
             //
