@@ -21,34 +21,34 @@ function ActionIndex({ children }: EVA08UIProps) {
 
     const [configControl, set] = useControls(() => ({
         setting: folder({
-            s0: {
+            "Index Threshold": {
                 value: 30,
                 min: 5,
                 max: 90,
                 step: 5,
-                lable: "Index Threshold",
+                // lable: "Index Threshold",
                 onChange: (e) => {
                     states.eva08state.thresholdIndex =
                         THREE.MathUtils.degToRad(e);
                 },
             },
-            s1: {
-                value: 30,
+            "Middle Threshold": {
+                value: 45,
                 min: 5,
                 max: 90,
                 step: 5,
-                lable: "Middle Threshold",
+                // lable: "Middle Threshold",
                 onChange: (e) => {
                     states.eva08state.thresholdMiddle =
                         THREE.MathUtils.degToRad(e);
                 },
             },
-            s2: {
+            "Index <-> Middle": {
                 value: 30,
                 min: 5,
                 max: 90,
                 step: 5,
-                lable: "Index Middle",
+                // lable: "Index Middle",
                 onChange: (e) => {
                     states.eva08state.thresholdFinger =
                         THREE.MathUtils.degToRad(e);
@@ -96,10 +96,10 @@ function ActionIndex({ children }: EVA08UIProps) {
                 const v5to9: THREE.Vector3 = results.toDirection(i, 5, i, 9);
                 const n: THREE.Vector3 = new THREE.Vector3()
                     .crossVectors(v5to0, v5to9)
-                    .multiplyScalar(-1);
-                const angleIndex: number = vIndex.angleTo(n);
+                    .multiplyScalar(config.label === "Left" ? -1 : 1);
+                const angleIndex: number = Math.PI / 2 - vIndex.angleTo(n);
                 set({ v1: angleIndex });
-                const angleMiddle: number = vMiddle.angleTo(n);
+                const angleMiddle: number = Math.PI / 2 - vMiddle.angleTo(n);
                 set({ v2: angleMiddle });
 
                 /**
@@ -117,7 +117,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                 // check Index finger / Up
                 if (
                     !eva08state.rotateFlag &&
-                    Math.PI / 2 - angleIndex > eva08state.thresholdIndex &&
+                    angleIndex > eva08state.thresholdIndex &&
                     angleFinger > eva08state.thresholdFinger
                 ) {
                     // Rotate / Middle
@@ -148,6 +148,8 @@ function ActionIndex({ children }: EVA08UIProps) {
                         set({ v11: "Call Event: Index -> Index" }); //
                     } else {
                         states.eva08state.upIndex = true;
+                        states.eva08state.elapsedTime =
+                            state.clock.getElapsedTime();
 
                         console.log("Up: Index"); //
                         set({ v5: true }); // set({ v5: eva08state.upIndex }); //
@@ -158,7 +160,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                 // check Index finger / Down
                 if (
                     eva08state.upIndex &&
-                    Math.PI / 2 - angleIndex < eva08state.thresholdIndex &&
+                    angleIndex < eva08state.thresholdIndex &&
                     angleFinger < eva08state.thresholdFinger
                 ) {
                     states.eva08state.upIndex = false;
@@ -206,6 +208,8 @@ function ActionIndex({ children }: EVA08UIProps) {
                         set({ v11: "Call Event: Middle -> Middle" }); //
                     } else {
                         states.eva08state.upMiddle = true;
+                        states.eva08state.elapsedTime =
+                            state.clock.getElapsedTime();
 
                         console.log("Up: Middle"); //
                         set({ v7: true }); // set({ v7: eva08state.upMiddle }); //
@@ -216,7 +220,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                 // check Miggle finger Down
                 if (
                     eva08state.upMiddle &&
-                    Math.PI / 2 - angleMiddle < eva08state.thresholdMiddle &&
+                    angleMiddle < eva08state.thresholdMiddle &&
                     angleFinger < eva08state.thresholdFinger
                 ) {
                     states.eva08state.upMiddle = false;
@@ -264,14 +268,18 @@ function ActionIndex({ children }: EVA08UIProps) {
                 }
                 // Timeout
                 if (
+                    eva08state.upIndex === true ||
                     eva08state.flagIndex === true ||
+                    eva08state.upMiddle === true ||
                     eva08state.flagMiddle === true
                 ) {
                     if (
                         state.clock.getElapsedTime() - eva08state.elapsedTime >
                         eva08state.timer
                     ) {
+                        states.eva08state.upIndex = false;
                         states.eva08state.flagIndex = false;
+                        states.eva08state.upMiddle = false;
                         states.eva08state.flagMiddle = false;
 
                         set({ v6: false }); // set({ v6: eva08state.flagIndex }); //

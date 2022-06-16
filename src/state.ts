@@ -10,9 +10,9 @@ class Configs {
 
 class EVA08States {
     count: number = 0;
-    thresholdIndex: number = 6;
-    thresholdMiddle: number = 6;
-    thresholdFinger: number = 6;
+    thresholdIndex: number = Math.PI / 6;
+    thresholdMiddle: number = Math.PI / 4;
+    thresholdFinger: number = Math.PI / 6;
     // 
     timer: number = 1;
     elapsedTime: number = 0;
