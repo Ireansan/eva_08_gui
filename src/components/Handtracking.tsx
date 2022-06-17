@@ -137,7 +137,8 @@ export function Handtracking() {
                     <ambientLight intensity={0.5} />
                     {config.mode === 0 && (
                         <EVA08UI>
-                            <LabelBox />
+                            {/* <LabelBox /> */}
+                            <></>
                         </EVA08UI>
                     )}
                     {config.mode === 1 && <SphereUI />}

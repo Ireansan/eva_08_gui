@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import { Text } from "@react-three/drei";
 import * as THREE from "three";
 import { useSnapshot } from "valtio";
 import { useControls, folder } from "leva";
@@ -106,8 +107,8 @@ function ActionIndex({ children }: EVA08UIProps) {
                  * Left
                  *  index up -> down -> middle up => rotate -Math.PI / 2
                  *  middle up -> down -> index up => rotate +Math.PI / 2
-                 *  index up -> down -> index up => count --
-                 *  middle up -> down -> middle up => count ++
+                 *  index up -> down -> index up => count ++
+                 *  middle up -> down -> middle up => count --
                  * Right
                  *  index up -> down -> middle up => rotate +Math.PI / 2
                  *  middle up -> down -> index up => rotate -Math.PI / 2
@@ -138,8 +139,9 @@ function ActionIndex({ children }: EVA08UIProps) {
                         set({ v11: "Rotate: Middle -> Index" }); //
                     }
                     // call event / Index
-                    else if (eva08state.flagIndex) {
+                    else if (eva08state.flagIndex && !eva08state.rotateFlag) {
                         //
+                        states.eva08state.count++;
                         states.eva08state.flagIndex = false;
 
                         console.log("Call Event: Index -> Index"); //
@@ -158,7 +160,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                     }
                 }
                 // check Index finger / Down
-                if (
+                else if (
                     eva08state.upIndex &&
                     angleIndex < eva08state.thresholdIndex &&
                     angleFinger < eva08state.thresholdFinger
@@ -175,7 +177,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                     set({ v11: "Down Index" }); //
                 }
                 // check Miggle finger / Up
-                if (
+                else if (
                     !eva08state.rotateFlag &&
                     Math.PI / 2 - angleMiddle > eva08state.thresholdMiddle &&
                     angleFinger > eva08state.thresholdFinger
@@ -198,8 +200,9 @@ function ActionIndex({ children }: EVA08UIProps) {
                         set({ v11: "Rotate: Index -> Middle" }); //
                     }
                     // call event
-                    else if (eva08state.flagMiddle) {
+                    else if (eva08state.flagMiddle && !eva08state.rotateFlag) {
                         //
+                        states.eva08state.count--;
                         states.eva08state.flagMiddle = false;
 
                         console.log("Call Event: Middle -> Middle"); //
@@ -218,7 +221,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                     }
                 }
                 // check Miggle finger Down
-                if (
+                else if (
                     eva08state.upMiddle &&
                     angleMiddle < eva08state.thresholdMiddle &&
                     angleFinger < eva08state.thresholdFinger
@@ -305,6 +308,43 @@ function ActionIndex({ children }: EVA08UIProps) {
         <group ref={ref}>
             {/*  */}
             {children}
+            <mesh>
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial color={"orange"} />
+                <Text
+                    anchorX="center"
+                    anchorY="middle"
+                    rotation={[0, 0, 0]}
+                    position={[0, 0, 0.75]}
+                    fontSize={1}
+                    children={1 + eva08state.count}
+                />
+                <Text
+                    anchorX="center"
+                    anchorY="middle"
+                    rotation={[0, Math.PI / 2, 0]}
+                    position={[0.75, 0, 0]}
+                    fontSize={1}
+                    children={2 + eva08state.count}
+                />
+                <Text
+                    anchorX="center"
+                    anchorY="middle"
+                    rotation={[0, Math.PI, 0]}
+                    position={[0, 0, -0.75]}
+                    fontSize={1}
+                    children={3 + eva08state.count}
+                />
+                <Text
+                    anchorX="center"
+                    anchorY="middle"
+                    rotation={[0, -Math.PI / 2, 0]}
+                    position={[-0.75, 0, 0]}
+                    fontSize={1}
+                    children={4 + eva08state.count}
+                />
+                {/* <meshNormalMaterial attach="material" /> */}
+            </mesh>
         </group>
     );
 }
