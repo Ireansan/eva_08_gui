@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/eva_08_gui/static/css/main.073c9b0a.css",
-    "main.js": "/eva_08_gui/static/js/main.ea06ac55.js",
+    "main.js": "/eva_08_gui/static/js/main.d245d77b.js",
     "static/js/787.5d564ee2.chunk.js": "/eva_08_gui/static/js/787.5d564ee2.chunk.js",
     "index.html": "/eva_08_gui/index.html",
     "main.073c9b0a.css.map": "/eva_08_gui/static/css/main.073c9b0a.css.map",
-    "main.ea06ac55.js.map": "/eva_08_gui/static/js/main.ea06ac55.js.map",
+    "main.d245d77b.js.map": "/eva_08_gui/static/js/main.d245d77b.js.map",
     "787.5d564ee2.chunk.js.map": "/eva_08_gui/static/js/787.5d564ee2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.ea06ac55.js"
+    "static/js/main.d245d77b.js"
   ]
 }
