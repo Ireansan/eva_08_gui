@@ -139,7 +139,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                         set({ v11: "Rotate: Middle -> Index" }); //
                     }
                     // call event / Index
-                    else if (eva08state.flagIndex && !eva08state.rotateFlag) {
+                    else if (eva08state.flagIndex) {
                         //
                         states.eva08state.count++;
                         states.eva08state.flagIndex = false;
@@ -177,9 +177,9 @@ function ActionIndex({ children }: EVA08UIProps) {
                     set({ v11: "Down Index" }); //
                 }
                 // check Miggle finger / Up
-                else if (
+                if (
                     !eva08state.rotateFlag &&
-                    Math.PI / 2 - angleMiddle > eva08state.thresholdMiddle &&
+                    angleMiddle > eva08state.thresholdMiddle &&
                     angleFinger > eva08state.thresholdFinger
                 ) {
                     // Rotate / Index
@@ -200,7 +200,7 @@ function ActionIndex({ children }: EVA08UIProps) {
                         set({ v11: "Rotate: Index -> Middle" }); //
                     }
                     // call event
-                    else if (eva08state.flagMiddle && !eva08state.rotateFlag) {
+                    else if (eva08state.flagMiddle) {
                         //
                         states.eva08state.count--;
                         states.eva08state.flagMiddle = false;
