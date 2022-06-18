@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -62,12 +62,12 @@ function ActionIndex({ children }: EVA08UIProps) {
                     states.eva08state.timer = e;
                 },
             },
+        }),
+        view: folder({
             s4: {
                 value: 0,
                 label: "Time left [s]",
             },
-        }),
-        view: folder({
             v0: { value: 0, label: "Finger radian" },
             v1: { value: 0, label: "n x 5to8" },
             v2: { value: 0, label: "n x 9to12" },

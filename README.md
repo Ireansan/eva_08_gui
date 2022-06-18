@@ -1,46 +1,50 @@
-# Getting Started with Create React App
+# EVA_08_UI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+これはヱヴァンゲリオン新劇場版:Qの劇中に登場するGUIを再現したアプリです。
 
-## Available Scripts
+## 操作方法
 
-In the project directory, you can run:
+薬指, 小指は握った状態でそれ以外の指が真っ直ぐに伸びている状態を初期状態としています。また, 人差し指または中指を付け根から折り曲げてから戻すまでを一つの動作としています。2つの動作の組み合わせで操作します。
+推定の精度上, 手のひらをカメラ側に向けて操作してください。
 
-### `npm start`
+### 登録されているジェスチャーとその結果
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+|ジェスチャー|結果|
+|:--|:--|
+|人差し指 -> 人差し指| キューブ上の数値全てに+1|
+|中指 -> 中指| キューブ上の数値全てに-1|
+|人差し指 -> 中指|左手の場合, 左回転 (右手では逆の右回転)|
+|中指 -> 人差し指|左手の場合, 右回転 (右手では逆の左回転)|
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 操作パネルの使い方・見方
 
-### `npm test`
+画面右上に紺色のパネルのようなものが表示されます。パネルの内容は動作に関係する setting と動作に関係はしないが結果を見ることができる view から構成されています。以下で setting の内容について説明します。view の内容については省略します。
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+|ラベル|内容|
+|:--|:--|
+|Index Threshold|人差し指に関する閾値|
+|Middle Threshold|中指に関する閾値, 手のひらの平面を基準とした中指の角度|
+|Index <-> Middle|人差し指と中指の間の角度|
+|Time [s]|入力受付時間|
 
-### `npm run build`
+角度は手のひらの平面を基準としており, 指を曲げた際の角度が閾値以上になると折り曲げたと判定されます。人差し指, 中指間の角度は2本同時に曲げた際に処理を行わないようにするために閾値を設定しています。
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## おまけ
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+作成の初期段階で試験的に作成した```Soft Sphere```と```Follow Box```という2つのモードがあります。
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Soft Sphere
 
-### `npm run eject`
+人差し指と中指の間に球が追従し, 指先の距離に合わせて球が縦方向に伸びたり縮んだりできるモードです。
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Follow Box
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+人差し指の指先を箱が追従するだけのモードです。
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 参考
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- [Mediapipe Hands](https://google.github.io/mediapipe/solutions/hands.html)
+- [app-mediapipe-hands-demo](https://github.com/nemutas/app-mediapipe-hands-demo)
+- [react-three-fiber](https://github.com/pmndrs/react-three-fiber)
+- [leva](https://github.com/pmndrs/leva)
+- [valtio](https://github.com/pmndrs/valtio)
