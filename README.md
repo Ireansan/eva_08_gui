@@ -49,7 +49,7 @@ https://Ireansan.github.io/eva_08_gui/
 ## 参考
 
 - [Mediapipe Hands](https://google.github.io/mediapipe/solutions/hands.html)
-- [app-mediapipe-hands-demo](https://github.com/nemutas/app-mediapipe-hands-demo)
+- [nemutas/app-mediapipe-hands-demo](https://github.com/nemutas/app-mediapipe-hands-demo)
 - [react-three-fiber](https://github.com/pmndrs/react-three-fiber)
 - [leva](https://github.com/pmndrs/leva)
 - [valtio](https://github.com/pmndrs/valtio)
